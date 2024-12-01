@@ -20,6 +20,34 @@ Chat: send a chat message to a model
 - add a chat response to a sequence
 - save/load chat message sequence with model configuration
 
+## Aux tasks
+
+```php
+use Countable;
+use ArrayAccess;
+class ChatMessages implements Countable, ArrayAccess
+ {
+    public const KEY_ROLE = 'role';
+    public const KEY_CONTENT = 'content';
+    private iterable $messages = [];
+    public function append(string $role, string $content)
+     {
+        # add any sanitization here
+        $this->messages[] = [self::KEY_ROLE => $role, self::KEY_CONTENT => $content];
+     }
+    public function getAll(): iterable
+     {
+        return $this->messages;
+     }
+    public function count(): int
+     {
+        return count($this->messages);
+     }
+ }
+```
+
+## Predefined versions
+
 v0.1.0
 configure a model, parameters, system
 Model: Ds\KeyMap (string => value)
