@@ -4,49 +4,49 @@
 ```php
 
 class Options {
-  public int $num_keep,
-  public int $seed,
-  public int $num_predict,
-  public int $top_k,
-  public float $top_p,
-  public float $min_p,
-  public float $typical_p,
-  public int $repeat_last_n,
-  public float $temperature,
-  public float $repeat_penalty, 
-  public float $presence_penalty,
-  public float $frequency_penalty,
-  public int $mirostat,
-  public float $mirostat_tau,
-  public float $mirostat_eta,
-  public bool $penalize_newline,
-  public string[] $stop,
-  public bool $numa, 
-  public int $num_ctx,
-  public int $num_batch,
-  public int $num_gpu,
-  public int $main_gpu,
-  public bool $low_vram,
-  public bool $vocab_only,
-  public bool $use_mmap,
-  public bool $use_mlock,
-  public int $num_thread;
+  public int      $num_keep;
+  public int      $seed;
+  public int      $num_predict;
+  public int      $top_k;
+  public float    $top_p;
+  public float    $min_p;
+  public float    $typical_p;
+  public int      $repeat_last_n;
+  public float    $temperature;
+  public float    $repeat_penalty;
+  public float    $presence_penalty;
+  public float    $frequency_penalty;
+  public int      $mirostat;
+  public float    $mirostat_tau;
+  public float    $mirostat_eta;
+  public bool     $penalize_newline;
+  public string[] $stop;
+  public bool     $numa;
+  public int      $num_ctx;
+  public int      $num_batch;
+  public int      $num_gpu;
+  public int      $main_gpu;
+  public bool     $low_vram;
+  public bool     $vocab_only;
+  public bool     $use_mmap;
+  public bool     $use_mlock;
+  public int      $num_thread;
 }
 class Request {
   public function __construct(
-  public string $model
+  public string  $model
   ) {}
-  public string $format;
+  public string  $format;
   public Options $options;
-  public bool $stream;
-  public string $keep_alive;
+  public bool    $stream;
+  public string  $keep_alive;
 }
 class Generate extends Request {
-  public string $prompt;
-  public string $suffix;
+  public string   $prompt;
+  public string   $suffix;
   public iterable $images;
-  public string $system;
-  public string $template;
+  public string   $system;
+  public string   $template;
 }
 
 class Chat extends Request {
@@ -54,18 +54,18 @@ class Chat extends Request {
   public iterable $tools;
 }
 class Message {
-  public string $role;
-  public string $content;
+  public string   $role;
+  public string   $content;
   public iterable $images;
   public iterable $tool_calls;
 }
 class Response {
-  public int $total_duration;
-  public int $load_duration;
-  public int $prompt_eval_count;
-  public int $prompt_eval_duration;
-  public int $eval_count;
-  public int $eval_duration;
+  public int    $total_duration;
+  public int    $load_duration;
+  public int    $prompt_eval_count;
+  public int    $prompt_eval_duration;
+  public int    $eval_count;
+  public int    $eval_duration;
   public string $response;
 }
 ```
