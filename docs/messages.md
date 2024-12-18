@@ -4,44 +4,69 @@
 ```php
 
 class Options {
-  $num_keep, $seed, $num_predict, $top_k, $top_p, $min_p, $typical_p, $repeat_last_n, $temperature, $repeat_penalty, 
-      $presence_penalty, $frequency_penalty, $mirostat, $mirostat_tau, $mirostat_eta, $penalize_newline, $stop, $numa, 
-      $num_ctx, $num_batch, $num_gpu, $main_gpu, $low_vram, $vocab_only, $use_mmap, $use_mlock, $num_thread;
+  public int $num_keep,
+  public int $seed,
+  public int $num_predict,
+  public int $top_k,
+  public float $top_p,
+  public float $min_p,
+  public float $typical_p,
+  public int $repeat_last_n,
+  public float $temperature,
+  public float $repeat_penalty, 
+  public float $presence_penalty,
+  public float $frequency_penalty,
+  public int $mirostat,
+  public float $mirostat_tau,
+  public float $mirostat_eta,
+  public bool $penalize_newline,
+  public string[] $stop,
+  public bool $numa, 
+  public int $num_ctx,
+  public int $num_batch,
+  public int $num_gpu,
+  public int $main_gpu,
+  public bool $low_vram,
+  public bool $vocab_only,
+  public bool $use_mmap,
+  public bool $use_mlock,
+  public int $num_thread;
 }
 class Request {
-  $model;
-  $format;
-  $options;
-  $stream;
-  $keep_alive;
+  public function __construct(
+  public string $model
+  ) {}
+  public string $format;
+  public Options $options;
+  public bool $stream;
+  public string $keep_alive;
 }
 class Generate extends Request {
-  $prompt;
-  $suffix;
-  $images;
-  $system;
-  $template;
+  public string $prompt;
+  public string $suffix;
+  public iterable $images;
+  public string $system;
+  public string $template;
 }
 
 class Chat extends Request {
-  $messages;
-  $tools;
+  public iterable $messages;
+  public iterable $tools;
 }
 class Message {
-  $role;
-  $content;
-  $images;
-  $tool_calls;
+  public string $role;
+  public string $content;
+  public iterable $images;
+  public iterable $tool_calls;
 }
 class Response {
-  $total_duration;
-  $load_duration;
-  $prompt_eval_count;
-  $prompt_eval_duration;
-  $eval_count;
-  $eval_duration;
-  $context;
-  $response;
+  public int $total_duration;
+  public int $load_duration;
+  public int $prompt_eval_count;
+  public int $prompt_eval_duration;
+  public int $eval_count;
+  public int $eval_duration;
+  public string $response;
 }
 ```
 
