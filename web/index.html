@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B13 Ollama Chat Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px;
+            height: 80vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .model-selector {
+            margin-bottom: 20px;
+        }
+
+        .model-selector label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .model-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .tools-section {
+            margin-bottom: 20px;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .tool-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .tool-item label {
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .stats {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: auto;
+        }
+
+        .stats h3 {
+            font-size: 14px;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #495057;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            margin: 0 10px;
+            font-size: 12px;
+        }
+
+        .message.user .message-avatar {
+            background: #007bff;
+        }
+
+        .message.assistant .message-avatar {
+            background: #28a745;
+        }
+
+        .message.tool .message-avatar {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px;
+            border-radius: 15px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.tool .message-content {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-bottom-left-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-area input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .send-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #0056b3;
+        }
+
+        .send-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: 100vh;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Configuration</h2>
+            
+            <div class="model-selector">
+                <label for="model">Model:</label>
+                <select id="model">
+                    <option value="llama3.2">llama3.2</option>
+                    <option value="llama3.1">llama3.1</option>
+                    <option value="mistral">mistral</option>
+                    <option value="codellama">codellama</option>
+                    <option value="phi3">phi3</option>
+                </select>
+            </div>
+
+            <div class="tools-section">
+                <h3>Available Tools</h3>
+                <div class="tool-item">
+                    <input type="checkbox" id="tool-calculate" checked>
+                    <label for="tool-calculate">Calculator</label>
+                </div>
+                <div class="tool-item">
+                    <input type="checkbox" id="tool-time" checked>
+                    <label for="tool-time">Date/Time</label>
+                </div>
+                <div class="tool-item">
+                    <input type="checkbox" id="tool-string" checked>
+                    <label for="tool-string">String Utils</label>
+                </div>
+                <div class="tool-item">
+                    <input type="checkbox" id="tool-file" checked>
+                    <label for="tool-file">File Operations</label>
+                </div>
+            </div>
+
+            <button id="clear-chat" style="padding: 10px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px;">
+                Clear Chat
+            </button>
+
+            <div class="stats">
+                <h3>Conversation Stats</h3>
+                <div class="stat-item">
+                    <span>Messages:</span>
+                    <span id="stat-messages">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>User:</span>
+                    <span id="stat-user">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Assistant:</span>
+                    <span id="stat-assistant">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Tools:</span>
+                    <span id="stat-tools">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <h1>B13 Ollama Chat</h1>
+                <p>Chat with AI models using tool/function calling</p>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="message assistant">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        Hello! I'm your AI assistant powered by Ollama. I have access to various tools including calculator, date/time functions, string utilities, and file operations. How can I help you today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div>🤖 AI is thinking...</div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off">
+                <button class="send-btn" id="send-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ChatInterface {
+            constructor() {
+                this.messages = [];
+                this.isLoading = false;
+                this.initializeElements();
+                this.bindEvents();
+                this.updateStats();
+            }
+
+            initializeElements() {
+                this.messagesContainer = document.getElementById('messages');
+                this.messageInput = document.getElementById('message-input');
+                this.sendBtn = document.getElementById('send-btn');
+                this.loadingDiv = document.getElementById('loading');
+                this.modelSelect = document.getElementById('model');
+                this.clearBtn = document.getElementById('clear-chat');
+                
+                // Stats elements
+                this.statMessages = document.getElementById('stat-messages');
+                this.statUser = document.getElementById('stat-user');
+                this.statAssistant = document.getElementById('stat-assistant');
+                this.statTools = document.getElementById('stat-tools');
+            }
+
+            bindEvents() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                this.clearBtn.addEventListener('click', () => this.clearChat());
+            }
+
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message || this.isLoading) return;
+
+                this.addMessage('user', message);
+                this.messageInput.value = '';
+                this.setLoading(true);
+
+                try {
+                    const response = await this.callAPI(message);
+                    this.handleResponse(response);
+                } catch (error) {
+                    this.showError('Failed to send message: ' + error.message);
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            async callAPI(message) {
+                const enabledTools = this.getEnabledTools();
+                
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        model: this.modelSelect.value,
+                        tools: enabledTools,
+                        conversation_id: this.getConversationId()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            }
+
+            getEnabledTools() {
+                const tools = [];
+                if (document.getElementById('tool-calculate').checked) tools.push('calculate');
+                if (document.getElementById('tool-time').checked) tools.push('time');
+                if (document.getElementById('tool-string').checked) tools.push('string');
+                if (document.getElementById('tool-file').checked) tools.push('file');
+                return tools;
+            }
+
+            getConversationId() {
+                if (!this.conversationId) {
+                    this.conversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                }
+                return this.conversationId;
+            }
+
+            handleResponse(response) {
+                if (response.error) {
+                    this.showError(response.error);
+                    return;
+                }
+
+                // Add assistant message
+                if (response.message) {
+                    this.addMessage('assistant', response.message);
+                }
+
+                // Add tool calls if any
+                if (response.tool_calls && response.tool_calls.length > 0) {
+                    response.tool_calls.forEach(toolCall => {
+                        this.addMessage('tool', `🔧 ${toolCall.function.name}(${JSON.stringify(toolCall.function.arguments)})\n→ ${toolCall.result}`);
+                    });
+                }
+
+                // Update stats
+                if (response.stats) {
+                    this.updateStatsFromResponse(response.stats);
+                }
+            }
+
+            addMessage(role, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role}`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = role === 'user' ? 'You' : role === 'assistant' ? 'AI' : '🔧';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = content;
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(contentDiv);
+                
+                this.messagesContainer.appendChild(messageDiv);
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                
+                this.messages.push({ role, content });
+                this.updateStats();
+            }
+
+            setLoading(loading) {
+                this.isLoading = loading;
+                this.sendBtn.disabled = loading;
+                this.loadingDiv.classList.toggle('show', loading);
+                
+                if (loading) {
+                    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                }
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                this.messagesContainer.appendChild(errorDiv);
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+
+            updateStats() {
+                const userCount = this.messages.filter(m => m.role === 'user').length;
+                const assistantCount = this.messages.filter(m => m.role === 'assistant').length;
+                const toolCount = this.messages.filter(m => m.role === 'tool').length;
+                
+                this.statMessages.textContent = this.messages.length;
+                this.statUser.textContent = userCount;
+                this.statAssistant.textContent = assistantCount;
+                this.statTools.textContent = toolCount;
+            }
+
+            updateStatsFromResponse(stats) {
+                this.statMessages.textContent = stats.total_messages || this.messages.length;
+                this.statUser.textContent = stats.user_messages || 0;
+                this.statAssistant.textContent = stats.assistant_messages || 0;
+                this.statTools.textContent = stats.tool_messages || 0;
+            }
+
+            clearChat() {
+                if (confirm('Are you sure you want to clear the chat?')) {
+                    this.messages = [];
+                    this.conversationId = null;
+                    
+                    // Keep only the welcome message
+                    const welcomeMessage = this.messagesContainer.querySelector('.message.assistant');
+                    this.messagesContainer.innerHTML = '';
+                    this.messagesContainer.appendChild(welcomeMessage);
+                    
+                    this.updateStats();
+                    
+                    // Clear server-side conversation
+                    fetch('api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'clear' })
+                    });
+                }
+            }
+        }
+
+        // Initialize the chat interface when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChatInterface();
+        });
+    </script>
+</body>
+</html>
