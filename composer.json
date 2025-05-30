@@ -1,0 +1,28 @@
+{
+    "name": "belfie13/b13-phplib-ollama",
+    "description": "A PHP library for interacting with Ollama chat API",
+    "type": "library",
+    "keywords": ["ollama", "ai", "chat", "llm", "php"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "belfie13",
+            "email": "belfie13@example.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "B13\\Ollama\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "B13\\Ollama\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

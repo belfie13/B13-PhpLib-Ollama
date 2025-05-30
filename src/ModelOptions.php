@@ -1,5 +1,7 @@
 <?php
 
+namespace B13\Ollama;
+
 class ModelOptions
 {
     /**
